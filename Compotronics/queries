@@ -1,0 +1,34 @@
+
+mongoimport --db mydb --collection AnalysisDataNew --type csv --fields company,phone,Technology,Announced,Dimensions,Weight,Size,Resolution,OS,Chipset,CPU,GPU,Card_slot,Internal,Primary,Secondary,3point5mm_jack,WLAN,Bluetooth,GPS,USB,Price_group,Stand_by,Talk_time --file /home/ishita1108/Desktop/finalsheet2.csv
+
+
+mongoexport --db mydb --collection AnalysisDataNew --csv --fields company,phone,Technology,Announced,Dimensions,Weight,Size,Resolution,OS,Chipset,CPU,GPU,Card_slot,Internal,Primary,Secondary,3point5mm_jack,WLAN,Bluetooth,GPS,USB,Price_group,Stand_by,Talk_time --out /home/ishita1108/Desktop/output_new.csv
+
+
+db.AnalysisDataNew.remove({$or:[
+{company:""},
+{phone:""},
+{Technology:""},
+{Announced:""},
+{Dimensions:""},
+{Weight:""},
+{Size:""},
+{Resolution:""},
+{OS:""},
+{Chipset:""},
+{CPU:""},
+{GPU:""},
+{Card_slot:""},
+{Internal:""},
+{Primary:""},
+{Secondary:""},
+{threepointfivemm_jack:""},
+{WLAN:""},
+{Bluetooth:""},
+{GPS:""},
+{USB:""},
+{Sensors:""},
+{Price_group:""},
+{Stand_by:""},
+{Talk_time:""}
+]});
