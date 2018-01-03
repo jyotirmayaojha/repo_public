@@ -1,0 +1,126 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="http://code.highcharts.com/stock/highstock.js"></script>
+  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+ 
+<script language="javascript">
+
+
+function init(val)
+{
+
+$.ajax({
+type: 'GET' ,
+url: 'http://homework8nodejs-env.us-east-2.elasticbeanstalk.com/ADX/'+val,
+success: function (data) {
+        //console.log(JSON.parse(data));
+        $('#share_button').attr('disabled', false);
+        var jsonobj = data;
+        var adx_x = new Array();
+        var adx_y = new Array();
+        var data_set_adx = [];
+        for(key in jsonobj["Technical Analysis: ADX"])
+        {
+            adx_x.push(key);
+            adx_y.push(jsonobj["Technical Analysis: ADX"][key]["ADX"]);
+        }
+        adx_x.reverse();
+        adx_y.reverse();
+        for (i=0; i<adx_x.length; i++)
+        {
+            adx_x[i] = Date.parse(adx_x[i]);
+            adx_y[i] = parseFloat(adx_y[i]);
+            data_set_adx.push([adx_x[i], adx_y[i]]);
+        }
+
+        var chart1 = new Highcharts.Chart({
+        chart: {
+            renderTo: 'ADX',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Average Directional Movement Index (ADX)'
+        },
+
+        subtitle: {
+            text: '<a href="https://www.alphavantage.co/" style="text-decoration: none; color:rgb(0,0,255)">Source: Alpha Vantage</a>'
+        },
+
+        xAxis: {
+                type: 'datetime',   
+                tickInterval: 3600*24*7*1000, 
+                range: 180*3600*24*1000,
+                labels: { 
+                    rotation: -45,  
+                    format: '{value:%m-%d}',    
+                }
+        },
+        yAxis: {
+        startOnTick: false,
+        endOnTick: true,
+        title: {
+            text: 'ADX',
+        }
+    },
+        tooltip:
+    {
+        xDateFormat: '%m/%d',
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+    plotOptions: {
+        line: {
+            dataLabels: {
+                enabled: false
+            },
+            enableMouseTracking: true
+        }
+    },
+
+        series: [{
+            name: val,
+            data: data_set_adx,
+             marker: {
+                enabled: true,
+                radius: 1
+            },
+            lineWidth: 0.5,
+            color: '#FF0000'
+        }]
+    });
+},
+error: function (xhr, status, error) {
+    console.log(error.message);
+    $('#ADX').html('<div class="container"><div class="well text-danger"><Label>Error! Failed to get ADX data<Label></div></div>');  
+}
+});
+
+}
+
+
+
+
+</script>
+</head>
+<body>
+    <div id="ADX">
+
+    </div>
+    </body>
+    </html>
+
+
+
+
+
+
+
+
+
+
+

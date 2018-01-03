@@ -1,0 +1,158 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="http://code.highcharts.com/stock/highstock.js"></script>
+  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+ 
+<script language="javascript">
+
+
+function init(val)
+{
+
+$.ajax({
+type: 'GET' ,
+url: 'http://homework8nodejs-env.us-east-2.elasticbeanstalk.com/BBANDS/'+val,
+success: function (data) {
+        //console.log(JSON.parse(data));
+        $('#share_button').attr('disabled', false);
+        var jsonobj = data;
+        var bbands_x = new Array();
+        var bbands_rlb = new Array();
+        var bbands_rub = new Array();
+        var bbands_rmb = new Array();
+        var dataset1 = [];
+        var dataset2 = [];
+        var dataset3 = [];
+        for(key in jsonobj["Technical Analysis: BBANDS"])
+        {
+            bbands_x.push(key);
+            bbands_rlb.push(jsonobj["Technical Analysis: BBANDS"][key]["Real Lower Band"]);
+            bbands_rub.push(jsonobj["Technical Analysis: BBANDS"][key]["Real Upper Band"]);
+            bbands_rmb.push(jsonobj["Technical Analysis: BBANDS"][key]["Real Middle Band"]);
+        }
+
+        bbands_x.reverse();
+        bbands_rlb.reverse();
+        bbands_rub.reverse();
+        bbands_rmb.reverse();
+        for (i=0; i<bbands_x.length; i++)
+        {
+            bbands_x[i] = Date.parse(bbands_x[i]);
+            bbands_rlb[i] = parseFloat(bbands_rlb[i]);
+            bbands_rub[i] = parseFloat(bbands_rub[i]);
+            bbands_rmb[i] = parseFloat(bbands_rmb[i]);
+            dataset1.push([bbands_x[i], bbands_rmb[i]]);
+            dataset2.push([bbands_x[i], bbands_rub[i]]);
+            dataset3.push([bbands_x[i], bbands_rlb[i]]);
+        }
+
+        var chart1 = new Highcharts.Chart({
+        chart: {
+            renderTo: 'BBANDS',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Bollinger Bands (BBANDS)'
+        },
+
+        subtitle: {
+            text: '<a href="https://www.alphavantage.co/" style="text-decoration: none; color:rgb(0,0,255)">Source: Alpha Vantage</a>'
+        },
+        xAxis: {
+                type: 'datetime',   
+                tickInterval: 7*3600*24*1000, 
+                range: 180*3600*24*1000,
+                labels: { 
+                    rotation: -45,  
+                    format: '{value:%m-%d}',    
+                }
+        },
+        yAxis: {
+        startOnTick: false,
+        endOnTick: true,
+        title: {
+            text: 'BBANDS',
+        }
+    },
+        tooltip:
+    {
+        xDateFormat: '%m/%d',
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+    plotOptions: {
+        line: {
+            dataLabels: {
+                enabled: false
+            },
+            enableMouseTracking: true
+        }
+    },
+
+        series: [{
+            name: val+' Real Middle Band',
+            data: dataset1,
+             marker: {
+                enabled: true,
+                radius: 1
+            },
+            lineWidth: 0.5,
+            color: '#FF0000'
+        },
+        {
+            name: val+' Real Upper Band',
+            data: dataset2,
+             marker: {
+                enabled: true,
+                radius: 1
+            },
+            lineWidth: 0.5,
+            color: '#000000'
+        },
+        {
+            name: val+' Real Lower Band',
+            data: dataset3,
+             marker: {
+                enabled: true,
+                radius: 1
+            },
+            lineWidth: 0.5,
+            color: '#00FFBB'
+        }
+        ]
+    });
+},
+error: function (xhr, status, error) {
+    console.log(error.message);
+    $('#BBANDS').html('<div class="container"><div class="well text-danger"><Label>Error! Failed to get BBANDS data<Label></div></div>');  
+}
+});
+
+}
+
+
+
+</script>
+</head>
+<body>
+    <div id="BBANDS">
+
+    </div>
+    </body>
+    </html>
+
+
+
+
+
+
+
+
+
+
+

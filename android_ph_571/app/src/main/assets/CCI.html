@@ -1,0 +1,129 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="http://code.highcharts.com/stock/highstock.js"></script>
+  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+ 
+<script language="javascript">
+
+
+function init(val)
+{
+
+$.ajax({
+type: 'GET' ,
+url: 'http://homework8nodejs-env.us-east-2.elasticbeanstalk.com/CCI/'+val,
+success: function (data) {
+        //console.log(JSON.parse(data));
+        $('#share_button').attr('disabled', false);
+        var jsonobj = data;
+        var cci_x = new Array();
+        var cci_y = new Array();
+        var data_set_cci = [];
+    
+        for(key in jsonobj["Technical Analysis: CCI"])
+        {
+            cci_x.push(key);
+            cci_y.push(jsonobj["Technical Analysis: CCI"][key]["CCI"]);
+        }
+        cci_x.reverse();
+        cci_y.reverse();
+        for (i=0; i<cci_x.length; i++)
+        {
+            cci_x[i] = Date.parse(cci_x[i]);
+            cci_y[i] = parseFloat(cci_y[i]);
+            data_set_cci.push([cci_x[i], cci_y[i]]);
+        }
+
+         var chart1 = new Highcharts.Chart({
+        chart: {
+            renderTo: 'CCI',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Commodity Channel Index (CCI)'
+        },
+
+        subtitle: {
+            text: '<a href="https://www.alphavantage.co/" style="text-decoration: none; color:rgb(0,0,255)">Source: Alpha Vantage</a>'
+        },
+
+        xAxis: {
+                type: 'datetime',   
+                tickInterval: 3600*24*7*1000, 
+                range: 180*3600*24*1000,
+                labels: { 
+                    rotation: -45,  
+                    format: '{value:%m-%d}',    
+                }
+        },
+        yAxis: {
+        startOnTick: false,
+        endOnTick: true,
+        title: {
+            text: 'CCI',
+        }
+    },
+        tooltip:
+    {
+        xDateFormat: '%m/%d',
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+    plotOptions: {
+        line: {
+            dataLabels: {
+                enabled: false
+            },
+            enableMouseTracking: true
+        }
+    },
+
+        series: [{
+            name: val,
+            data: data_set_cci,
+             marker: {
+                enabled: true,
+                radius: 1
+            },
+            lineWidth: 0.5,
+            color: '#FF0000'
+        }]
+    });
+},
+error: function (xhr, status, error) {
+    console.log(error.message);
+    $('#CCI').html('<div class="container"><div class="well text-danger"><Label>Error! Failed to get CCI data<Label></div></div>');  
+}
+});
+
+
+
+}
+
+
+
+
+</script>
+</head>
+<body>
+    <div id="CCI">
+
+    </div>
+    </body>
+    </html>
+
+
+
+
+
+
+
+
+
+
+

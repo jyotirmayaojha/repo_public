@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">android_ph_571</string>
+    <string name="symbol"></string>
+    <string-array name="parameters">
+        <item>PRICE</item>
+        <item>SMA</item>
+        <item>EMA</item>
+        <item>MACD</item>
+        <item>RSI</item>
+        <item>ADX</item>
+        <item>CCI</item>
+    </string-array>
+
+    <string-array name="sortby_list">
+        <item>Name</item>
+        <item>Price</item>
+        <item>Change</item>
+        <item>Change Percent</item>
+    </string-array>
+
+    <string-array name="order_list">
+        <item>Ascending</item>
+        <item>Descending</item>
+    </string-array>
+
+</resources>
+

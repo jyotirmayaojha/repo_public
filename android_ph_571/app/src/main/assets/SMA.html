@@ -1,0 +1,126 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="http://code.highcharts.com/stock/highstock.js"></script>
+  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+ 
+<script language="javascript">
+
+
+function init(val)
+{
+
+$.ajax({
+type: 'GET' ,
+url: 'http://homework8nodejs-env.us-east-2.elasticbeanstalk.com/SMA/'+val,
+success: function (data) {
+        //console.log(JSON.parse(data));
+        $('#share_button').attr('disabled', false);
+        var jsonobj = data;
+        var sma_x = new Array();
+        var sma_y = new Array();
+        data_set_sma = [];
+        for(key in jsonobj["Technical Analysis: SMA"])
+        {
+            sma_x.push(key);
+            sma_y.push(jsonobj["Technical Analysis: SMA"][key]["SMA"]);
+        }
+        sma_x.reverse();
+        sma_y.reverse();
+        for (i=0; i<sma_y.length; i++)
+        {
+            sma_x[i] = Date.parse(sma_x[i]);
+            sma_y[i] = parseFloat(sma_y[i]);
+            data_set_sma.push([sma_x[i], sma_y[i]]);
+        }
+                var chart1 = new Highcharts.Chart({
+        chart: {
+            renderTo: 'SMA',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Simple Moving Average (SMA)'
+        },
+
+        subtitle: {
+         text: '<a href="https://www.alphavantage.co/" style="text-decoration: none; color:rgb(0,0,255)">Source: Alpha Vantage</a>'
+        },
+
+        xAxis: {
+                type: 'datetime',   
+                tickInterval: 3600*24*7*1000, 
+                range: 180*3600*24*1000,
+                labels: { 
+                    rotation: -45,  
+                    format: '{value:%m-%d}',    
+                }
+        },
+        yAxis: {
+        startOnTick: false,
+        endOnTick: true,
+        title: {
+            text: 'SMA',
+        }
+    },
+    tooltip:
+    {
+        xDateFormat: '%m/%d',
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+    plotOptions: {
+        line: {
+            dataLabels: {
+                enabled: false
+            },
+            enableMouseTracking: true
+        }
+    },
+
+        series: [{
+            name: val,
+            data: data_set_sma,
+             marker: {
+                enabled: true,
+                radius: 1
+            },
+            lineWidth: 0.5,
+            color: '#FF0000'
+            
+        }]
+    });
+},
+error: function (xhr, status, error) {
+    console.log(error.message);
+    $('#SMA').html('<div class="container"><div class="well text-danger"><Label>Error! Failed to get SMA data<Label></div></div>');  
+}
+});
+
+}
+
+
+
+
+</script>
+</head>
+<body>
+    <div id="SMA">
+
+    </div>
+    </body>
+    </html>
+
+
+
+
+
+
+
+
+
+
+

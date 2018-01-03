@@ -1,0 +1,140 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="http://code.highcharts.com/stock/highstock.js"></script>
+  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+ 
+<script language="javascript">
+
+
+function init(val)
+{
+
+$.ajax({
+type: 'GET' ,
+url: 'http://homework8nodejs-env.us-east-2.elasticbeanstalk.com/STOCH/'+val,
+success: function (data) {
+        //console.log(JSON.parse(data));
+            $('#share_button').attr('disabled', false);
+            var jsonobj = data;
+            var stoch_x = new Array();
+            var stoch_slowk = new Array();
+            var stoch_slowd = new Array();
+            var data_set_stoch_k = [];
+            var data_set_stoch_d = [];
+        for(key in jsonobj["Technical Analysis: STOCH"])
+        {
+            stoch_x.push(key);
+            stoch_slowk.push(jsonobj["Technical Analysis: STOCH"][key]["SlowK"]);
+            stoch_slowd.push(jsonobj["Technical Analysis: STOCH"][key]["SlowD"]);
+        }
+        stoch_x.reverse();
+        stoch_slowd.reverse();
+        stoch_slowk.reverse();
+        for (i=0; i<stoch_x.length; i++)
+        {
+            stoch_x[i] = Date.parse(stoch_x[i]);
+            stoch_slowk[i] = parseFloat(stoch_slowk[i]);
+            stoch_slowd[i] = parseFloat(stoch_slowd[i]);
+            data_set_stoch_k.push([stoch_x[i], stoch_slowk[i]]);
+            data_set_stoch_d.push([stoch_x[i], stoch_slowd[i]]);
+        }
+
+         var chart1 = new Highcharts.Chart({
+        chart: {
+            renderTo: 'STOCH',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Stochastic Oscillator (STOCH)'
+        },
+
+        subtitle: {
+            text: '<a href="https://www.alphavantage.co/" style="text-decoration: none; color:rgb(0,0,255)">Source: Alpha Vantage</a>'
+        },
+
+        xAxis: {
+                type: 'datetime',   
+                tickInterval: 3600*24*7*1000, 
+                range: 180*3600*24*1000,
+                labels: { 
+                    rotation: -45,  
+                    format: '{value:%m-%d}',    
+                }
+        },
+        yAxis: {
+        startOnTick: false,
+        endOnTick: true,
+        title: {
+            text: 'STOCH'
+                }
+               },
+    tooltip:
+    {
+        xDateFormat: '%m/%d',
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+    plotOptions: {
+        line: {
+            dataLabels: {
+                enabled: false
+            },
+            enableMouseTracking: true
+        }
+    },
+
+        series: [{
+            name: val+' SlowK',
+            data: data_set_stoch_k,
+             marker: {
+                enabled: true,
+                radius: 1
+            },
+            color: '#ff0000',
+            lineWidth: 0.5,
+                },
+                {
+            name: val+' SlowD',
+            data: data_set_stoch_d,
+             marker: {
+                enabled: true,
+                radius: 1
+            },
+            color: '#0000ff',
+            lineWidth: 0.5,
+                }]  
+    });
+},
+error: function (xhr, status, error) {
+    console.log(error.message);
+    $('#STOCH').html('<div class="container"><div class="well text-danger"><Label>Error! Failed to get STOCH data<Label></div></div>');
+}
+});
+
+}
+
+
+</script>
+</head>
+<body>
+    <div id="STOCH">
+
+    </div>
+    </body>
+    </html>
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,270 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="http://code.highcharts.com/stock/highstock.js"></script>
+  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+ 
+<script language="javascript">
+
+
+function init(val)
+{
+    
+    $.ajax({
+type: 'GET' ,
+url: 'http://homework8nodejs-env.us-east-2.elasticbeanstalk.com/PRICE-VOLUME/'+val,
+success: function (data) {
+        //document.getElementById("Price").style.display = "block";
+        //document.getElementById("common").style.display = "none";
+        
+        //console.log(JSON.parse(data));
+        var jsonobj = data;
+        var data_set_price = new Array();
+        var data_set_volume = new Array();
+        var data_set_px = [];
+        var data_set_vx = [];
+        var data_menu0_price = new Array();
+        var data_menu0_volume = new Array();
+        var data_menu0_x = new Array();
+        var count = 0;
+
+        var previousclose;
+        var data_x = new Array(); 
+        for(key in jsonobj["Time Series (Daily)"])
+        {
+            data_x.push(key);
+            data_set_price.push(jsonobj["Time Series (Daily)"][key]["4. close"]);
+            data_set_volume.push(jsonobj["Time Series (Daily)"][key]["5. volume"]);
+        }
+        
+        var previousclose = jsonobj["Time Series (Daily)"][data_x[1]]["4. close"];
+        var close = jsonobj["Time Series (Daily)"][data_x[0]]["4. close"];
+        var change = ((close - previousclose)).toFixed(2);
+        var changep = ((change/previousclose)*100).toFixed(2);
+        var timest = jsonobj["Meta Data"]["3. Last Refreshed"];
+         timest = timest.split(' ')[0];
+   
+                    //var time_stamp = jsonobj["Meta Data"]["3. Last Refreshed"]+' EDT';
+                    
+        $("#Timestamp").html(timest);
+        $("#stocksym").html(jsonobj["Meta Data"]["2. Symbol"]);
+        $("#LastPrice").html(jsonobj["Time Series (Daily)"][data_x[0]]["4. close"]);
+        $("#Open").html(jsonobj["Time Series (Daily)"][data_x[0]]["1. open"]);
+        $("#Close").html(jsonobj["Time Series (Daily)"][data_x[0]]["4. close"]);
+        if (change>=0)
+        $("#Change").html('<Label style="color: green" name="cng">'+change + ' ('+ changep+'%)'+'</Label>&nbsp;<img src="http://cs-server.usc.edu:45678/hw/hw8/images/Up.png" height="20px" width="20px"></img>'); 
+        else 
+        $("#Change").html('<Label style="color: red" name="cng">'+change + ' ('+ changep+'%)'+'</Label>&nbsp;<img src="http://cs-server.usc.edu:45678/hw/hw8/images/Down.png" height="20px" width="20px"></img>');   
+        $("#Range").html(jsonobj["Time Series (Daily)"][timest]["3. low"]+ ' - ' +jsonobj["Time Series (Daily)"][timest]["2. high"])
+        $("#Volume").html(jsonobj["Time Series (Daily)"][timest]["5. volume"]);
+
+        data_x.reverse();
+        data_set_price.reverse();
+        data_set_volume.reverse();
+        for (i=0; i<data_x.length; i++)
+        {
+            data_x[i] = Date.parse(data_x[i]);
+            data_set_price[i] = parseFloat(data_set_price[i]);
+            data_set_volume[i] = parseFloat(data_set_volume[i]);
+            data_set_px.push([data_x[i], data_set_price[i]]);
+            data_set_vx.push([data_x[i], data_set_volume[i]]);
+            if(count<132)
+            {
+              data_menu0_volume[i] = parseFloat(data_set_volume[i]);
+              data_menu0_price[i] = parseFloat(data_set_price[i]);
+              data_menu0_x[i] = parseFloat(data_x[i]);
+              count++;
+            }
+        }
+
+        
+
+       Highcharts.chart('Price', {
+        chart: {
+            width: 500,
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Stock Price'
+        },
+        subtitle: {
+            text: '<a href="https://www.alphavantage.co/" style="text-decoration: none; color:rgb(0,0,255)">Source: Alpha Vantage</a>'
+        },
+        xAxis: {
+                type: 'datetime',   
+                //tickInterval: 3600*24*1000, 
+                //range: 180*3600*24*1000,
+                categories: data_menu0_x,
+                labels: { 
+                    rotation: -45,  
+                    format: '{value:%m-%d}',    
+                }
+        },
+        yAxis: [
+        {     
+          
+            //maxPadding: 0, 
+            opposite: true,
+            title: {
+                 text: 'Volume'
+                    }
+        },
+        {          
+            
+            title: {
+                text: 'Stock Price'
+            }
+        }
+        ],
+    tooltip:
+    {
+        xDateFormat: '%m/%d',
+    },
+        legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+                },
+        plotOptions: {
+            area: {
+                marker: {
+                    radius: 2
+                },
+                threshold: null
+            },
+            bar: {
+            dataLabels: {
+                enabled: true
+            }
+        }
+        },
+        series: [
+           {
+            type: 'area',
+            name: 'Stock Price',
+            fillOpacity: 0.5,
+            yAxis:1,
+            //data: data_set_price,  
+            data: data_menu0_price,
+            color: '#9370DB'
+        },{
+            type: 'column',
+            name: val+' Volume', 
+            //pointWidth: 0.00000001,
+            maxPointWidth: 0.0000005,          
+            fillOpacity: 1,
+            //data: data_set_volume,
+            data: data_menu0_volume,
+            color: 'red'
+            
+        }]
+    }); 
+
+    
+  /*   var chart = Highcharts.stockChart('menu1', {
+
+        chart: {
+            height: 400
+        },
+
+        title: {
+            text: val+' Stock Value'
+        },
+
+        subtitle: {
+            text: '<a href="https://www.alphavantage.co/" style="text-decoration: none; color:rgb(0,0,255)">Source: Alpha Vantage</a>'
+        },
+
+rangeSelector: {
+                                buttons: [{
+                                    type: 'week',
+                                    count: 1,
+                                    text: '1w'
+                                },
+                                {
+                                    type: 'month',
+                                    count: 1,
+                                    text: '1m'
+                                },
+                                {
+                                    type: 'month',
+                                    count: 3,
+                                    text: '3m'
+                                }
+                                ,{
+                                    type: 'month',
+                                    count: 6,
+                                    text: '6m'
+                                },
+                                {
+                                    type: 'year',
+                                    count: 1,
+                                    text: '1y'
+                                },
+                                 {
+                                    type: 'ytd',
+                                    text: 'YTD'
+                                }
+                                ,{
+                                    type: 'all',
+                                    count: 1,
+                                    text: 'All'
+                                }],
+                                selected: 0
+                          
+                            },
+
+        series: [{
+            name: 'Stock Price',
+            data: data_set_px,
+            type: 'area',
+            threshold: null,
+            tooltip: {
+                valueDecimals: 2
+            }
+        }],
+
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 500
+                },
+
+                chartOptions: {
+                    chart: {
+                        height: 300
+                    },
+                    subtitle: {
+                        text: null
+                    },
+                    navigator: {
+                        enabled: false
+                    }
+                }
+            }]
+        }
+    });
+
+*/
+
+},
+error: function (xhr, status, error) {
+    console.log(error.message); 
+    $('#menu1').html('<div class="container"><div class="well text-danger"><Label>Error! Failed to get current stock data data<Label></div></div>');
+    $('#Price').html('<div class="container"><div class="well text-danger"><Label>Error! Failed to get Price data<Label></div></div>');
+}
+});
+
+
+}
+
+init("AAPL");
+</script>
+</head>
+<body>
+    <div id="Price">
+
+    </div>
+    </body>
+    </html>

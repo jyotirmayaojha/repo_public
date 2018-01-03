@@ -1,0 +1,162 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="http://code.highcharts.com/stock/highstock.js"></script>
+  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+ 
+<script language="javascript">
+
+
+function init(val)
+{
+
+$.ajax({
+type: 'GET' ,
+url: 'http://homework8nodejs-env.us-east-2.elasticbeanstalk.com/MACD/'+val,
+success: function (data) {
+        //console.log(JSON.parse(data));
+          $('#share_button').attr('disabled', false);
+          var jsonobj = data;
+        
+          var macd_x = new Array();
+          var macd_macd = new Array();
+          var macd_sig = new Array();
+          var macd_hist = new Array();
+          var data_set_1 = [];
+          var data_set_2 = [];
+          var data_set_3 = [];
+
+        for(key in jsonobj["Technical Analysis: MACD"])
+        {
+            macd_x.push(key);
+            macd_macd.push(jsonobj["Technical Analysis: MACD"][key]["MACD"]);
+            macd_sig.push(jsonobj["Technical Analysis: MACD"][key]["MACD_Signal"]);
+            macd_hist.push(jsonobj["Technical Analysis: MACD"][key]["MACD_Hist"]);
+        }
+
+        macd_x.reverse();
+        macd_macd.reverse();
+        macd_sig.reverse();
+        macd_hist.reverse();
+        for (i=0; i<macd_x.length; i++)
+        {
+            macd_x[i] = Date.parse(macd_x[i]);
+            macd_macd[i] = parseFloat(macd_macd[i]);
+            macd_sig[i] = parseFloat(macd_sig[i]);
+            macd_hist[i] = parseFloat(macd_hist[i]);
+            data_set_1.push([macd_x[i], macd_macd[i]]);
+            data_set_2.push([macd_x[i], macd_sig[i]]);
+            data_set_3.push([macd_x[i], macd_hist[i]]);
+        }
+
+        var chart1 = new Highcharts.Chart({
+        chart: {
+            renderTo: 'MACD',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Moving Average Convergence/Divergence (MACD)'
+        },
+
+        subtitle: {
+            text: '<a href="https://www.alphavantage.co/" style="text-decoration: none; color:rgb(0,0,255)">Source: Alpha Vantage</a>'
+        },
+
+        xAxis: {
+                type: 'datetime',   
+                tickInterval: 3600*24*7*1000, 
+                range: 180*3600*24*1000,
+                labels: { 
+                    rotation: -45,  
+                    format: '{value:%m-%d}',    
+                }
+        },
+        yAxis: {
+        startOnTick: true,
+        endOnTick: true,
+        title: {
+            text: 'MACD',
+        }
+    },
+    tooltip:
+    {
+        xDateFormat: '%m/%d',
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+    plotOptions: {
+        line: {
+            dataLabels: {
+                enabled: false
+            },
+            enableMouseTracking: true
+        }
+    },
+
+        series: [{
+            name: val+' MACD',
+            data: data_set_1,
+             marker: {
+                enabled: true,
+                radius: 1
+            },
+            lineWidth: 0.5,
+            color: '#FF0000'
+        },
+        {
+            name: val+' MACD_Hist',
+            data: data_set_2,
+             marker: {
+                enabled: true,
+                radius: 1
+            },
+            lineWidth: 0.5,
+            color: '#ff7777'
+        },
+        {
+            name: val+' MACD_Signal',
+            data: data_set_3,
+             marker: {
+                enabled: true,
+                radius: 1
+            },
+            lineWidth: 0.5,
+            color: '#CC00DD'
+        }
+        ]
+    });
+},
+error: function (xhr, status, error) {
+    console.log(error.message);
+    $('#MACD').html('<div class="container"><div class="well text-danger"><Label>Error! Failed to get MACD data<Label></div></div>');  
+}
+});
+
+}
+
+
+
+
+</script>
+</head>
+<body>
+    <div id="MACD">
+
+    </div>
+    </body>
+    </html>
+
+
+
+
+
+
+
+
+
+
+
